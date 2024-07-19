@@ -6,28 +6,81 @@
     <title>Resume Viewer</title>
     <style>
         body {
+            margin: auto;
+            padding: 0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f8f8f8;
+            /* align-items: center; */
+            /* height: 100vh; */
+            gap: 2vh;
+            background-color: #f0f0f0;
+            max-width: 768px;
         }
-        iframe {
-            width: 80%;
-            height: 100%;
-            border: 1px solid #ccc;
-        }
-        @media (max-width: 768px) {
-            iframe {
-                width: 100%;
-            }
+        button {
+            margin: 30px auto;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20vh;
         }
     </style>
 </head>
 <body>
-    <iframe src="resume.pdf" type="application/pdf">
-        Your browser does not support iframes. Please download the PDF to view it: <a href="resume.pdf">Download PDF</a>
-    </iframe>
+    <!-- page: 1 -->
+    <canvas id="pdfCanvas"></canvas>
+    <!-- page: 2 -->
+    <canvas id="pdfCanvas2"></canvas>
+    <!-- download button -->
+    <button id="downloadPdf">Download Resume PDF</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.7.570/pdf.min.js"></script>
+    <script>
+        // Ensure the PDF.js workerSrc property is specified.
+pdfjsLib.GlobalWorkerOptions.workerSrc = '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.7.570/pdf.worker.min.js';
+
+// Asynchronously downloads PDF.
+pdfjsLib.getDocument('resume.pdf').promise.then(function(pdfDoc_) {
+    // Render the first page.
+    pdfDoc_.getPage(1).then(function(page) {
+        var canvas = document.getElementById('pdfCanvas');
+        var context = canvas.getContext('2d');
+        var viewport = page.getViewport({scale: 3});
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        var renderContext = {
+            canvasContext: context,
+            viewport: viewport
+        };
+        page.render(renderContext);
+    });
+
+    // Render the second page if it exists.
+    if (pdfDoc_.numPages >= 2) {
+        pdfDoc_.getPage(2).then(function(page) {
+            var canvas = document.getElementById('pdfCanvas2');
+            var context = canvas.getContext('2d');
+            var viewport = page.getViewport({scale: 3});
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            var renderContext = {
+                canvasContext: context,
+                viewport: viewport
+            };
+            page.render(renderContext);
+        });
+    }
+});
+
+// Download PDF functionality
+document.getElementById('downloadPdf').addEventListener('click', function() {
+    var link = document.createElement('a');
+    link.href = 'resume.pdf'; // The path to the PDF file.
+    link.download = 'resume.pdf'; // The default download name.
+    link.click(); // Simulate click to trigger download.
+});
+    </script>
 </body>
 </html>
